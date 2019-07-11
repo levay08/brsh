@@ -1,5 +1,5 @@
 #! /bin/bash
-#  clean junk files and free up your memory cache on (Ubuntu/Debian) machine
+#  clean junk files and free up your memory cache on (Ubuntu/Debian/Arch) machine
 #  F1 by Mbah Gugel
 
 if [ "$(id -u)" != "0" ]; then
@@ -11,6 +11,13 @@ clear
 echo -e '
 ====================================[brsh]=======
 # this is your mem cache before cleaning : '
+echo ''
+echo '# pacman current cache:' 
+ls /var/cache/pacman/pkg/ | wc -l
+echo '# pacman disk usage:' 
+du -sh /var/cache/pacman/pkg/
+echo ''
+
 awk '/MemTotal/,/SwapCached/' /proc/meminfo
 echo ''
 
@@ -22,16 +29,17 @@ fi
 
 echo '>>> start clearing, wait a moment please...'
 
-echo -ne '!!!!!!!!!!!!.....( 20% clearing swap space )\r'
+echo -ne '!!!!!!!!!!!!!!!!!!!!......( 30% clearing buffer and pagecache )\r'
+echo 1 > /proc/sys/vm/drop_caches && echo 2 > /proc/sys/vm/drop_caches &&  echo 3 > /proc/sys/vm/drop_caches && sudo paccache -r && sleep 1
+
+echo -ne '!!!!!!!!!!!!.....( 40 clearing swap space )\r'
 swapoff -a && swapon -a && sleep 1
 
-echo -ne '!!!!!!!!!!!!!!!!!!!!......( 40% clearing buffer and pagecache )\r'
-echo 1 > /proc/sys/vm/drop_caches && echo 2 > /proc/sys/vm/drop_caches &&  echo 3 > /proc/sys/vm/drop_caches && sleep 1
-
-echo -ne '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!......( 50% clearing filesystem buffer )\r'
+echo -ne '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!......( 60% clearing filesystem buffer )\r'
 sync && sleep 1
-	
-echo -ne '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.....( 70% cleaning trash )\r'
+
+
+echo -ne '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.....( 80% cleaning trash )\r'
 rm -rf /home/*/.local/share/Trash/*/* >/dev/null 2>&1
 rm -rf /root/.local/share/Trash/*/*   >/dev/null 2>&1
 sleep 1
@@ -39,7 +47,15 @@ sleep 1
 echo -ne '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!( 100% finished )\r'
 echo -ne '\n'
 
+sleep 4 && clear
+
 echo '# your last mem cache is : ' && echo ''
 awk '/MemTotal/,/SwapCached/' /proc/meminfo
-sleep 4 && clear && echo -e '
+echo ''
+
+echo '# pacman current cache:' 
+ls /var/cache/pacman/pkg/ | wc -l
+echo '# pacman disk usage:' 
+du -sh /var/cache/pacman/pkg/
+echo -e '
 =======[ TASK COMPLETED ]======='
